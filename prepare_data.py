@@ -8,23 +8,10 @@ from glob import glob
 import numpy as np
 np.random.seed = 0  # for reproducibility
 
-import pandas as pd
-
-import matplotlib
 import argparse
-from matplotlib import pylab as plt
-# %config InlineBackend.figure_format = 'retina'
 
-from matplotlib.patches import Circle
-import matplotlib.patheffects as PathEffects
 
-import seaborn as sns
-
-from PIL import Image
-
-import json
-
-from tqdm import tqdm_notebook as tqdm
+from tqdm import tqdm
 
 import cv2
 
@@ -35,6 +22,7 @@ from sklearn.model_selection import train_test_split
 def list_dir_with_full_paths(dir_path):
     dir_abs_path = os.path.abspath(dir_path)
     return sorted([os.path.join(dir_abs_path, file_name) for file_name in os.listdir(dir_abs_path)])
+
 
 def extract_images_from_video(video_path, images_dir, switch_frame):
     video_name = os.path.splitext(os.path.basename(video_path))[0]
@@ -112,6 +100,13 @@ def create_images_from_videos(videos_dir, images_from_videos_dir):
         print('Directory {} already exists!'.format(images_from_videos_dir))
 
 
+def multiple_copy(srcs, dst):
+    if not os.path.exists(dst):
+        os.makedirs(dst)
+
+    for src in srcs:
+        shutil.copytree(src, dst)
+
 
 # Arguments
 parser = argparse.ArgumentParser()
@@ -129,12 +124,23 @@ if __name__ == '__name__':
     video_name_to_switch_frame = load_switch_frames(pj(args.videos_dir, 'ideal.txt'))
 
     images_from_videos_dir = pj(args.prepared_data_dir, 'images_from_videos')
+
+    print('Creating images from videos...')
     create_images_from_videos(args.videos_dir, images_from_videos_dir)
 
-    if args.val_ratio == 0:
-        train_images_from_videos_dir = pj(args.prepared_data_dir, 'train_images_from_videos')
-        create_images_from_videos(args.videos_dir, train_images_from_videos_dir)
+    if args.val_ratio != 0:
+        train_images_dirs, val_images_dirs = train_test_split(
+            list_dir_with_full_paths(images_from_videos_dir),
+            test_size=args.val_ratio, random_state=0
+        )
 
-        train_images_by_class_dir = pj(args.prepared_data_dir, 'train_images_by_class')
-        create_classification_dir_from_images_dirs(list_dir_with_full_paths(train_images_from_videos_dir),
-                                                   train_images_by_class_dir)
+        multiple_copy(train_images_dirs, pj(args.prepared_data_dir, 'train_images_from_videos'))
+        multiple_copy(val_images_dirs, pj(args.prepared_data_dir, 'val_images_from_videos'))
+
+        print('Creating train classification dir...')
+        create_classification_dir_from_images_dirs(train_images_dirs,
+                                                   pj(args.prepared_data_dir, 'train_images_by_class'))
+
+        print('Creating train classification dir...')
+        create_classification_dir_from_images_dirs(val_images_dirs,
+                                                   pj(args.prepared_data_dir, 'val_images_by_class'))
