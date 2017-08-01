@@ -24,7 +24,7 @@ def list_dir_with_full_paths(dir_path):
     return sorted([os.path.join(dir_abs_path, file_name) for file_name in os.listdir(dir_abs_path)])
 
 
-def extract_images_from_video(video_path, images_dir, switch_frame):
+def extract_images_from_video(video_path, images_dir, switch_frame=None):
     video_name = os.path.splitext(os.path.basename(video_path))[0]
 
     video_capture = cv2.VideoCapture(video_path)
@@ -33,12 +33,16 @@ def extract_images_from_video(video_path, images_dir, switch_frame):
     count = 0
     success, image = video_capture.read()
     while success:
-        if count < switch_frame or switch_frame == -1:
-            label = 0  # red traffic light
-        else:
-            label = 1  # green traffic light
 
-        image_path = pj(images_dir, '{:03}_{}_{}.jpg'.format(count, video_name, label))
+
+        if switch_frame is not None:
+            if count < switch_frame or switch_frame == -1:
+                label = 0  # red traffic light
+            else:
+                label = 1  # green traffic light
+            image_path = pj(images_dir, '{:03}_{}_{}.jpg'.format(count, video_name, label))
+        else:
+            image_path = pj(images_dir, '{:03}_{}.jpg'.format(count, video_name))
         cv2.imwrite(image_path, image)
 
         success, image = video_capture.read()
@@ -74,18 +78,20 @@ def create_classification_dir_from_images_dirs(images_dirs, classification_dir):
 
 
 def load_switch_frames(path):
-    with open(path) as fin:
-        video_name_to_switch_frame = dict()
-        for line in fin.readlines():
-            line_splitted = line.strip().split(' ')
-            video_name, switch_frame = line_splitted[0], int(line_splitted[-1])
+    if os.path.exists(path):
+        with open(path) as fin:
+            video_name_to_switch_frame = dict()
+            for line in fin.readlines():
+                line_splitted = line.strip().split(' ')
+                video_name, switch_frame = line_splitted[0], int(line_splitted[-1])
 
-            video_name_to_switch_frame[video_name] = switch_frame
+                video_name_to_switch_frame[video_name] = switch_frame
+        return video_name_to_switch_frame
+    else:
+        return None
 
-    return video_name_to_switch_frame
 
-
-def create_images_from_videos(videos_dir, images_from_videos_dir):
+def create_images_from_videos(videos_dir, images_from_videos_dir, video_name_to_switch_frame=None):
     if not os.path.exists(images_from_videos_dir):
         os.mkdir(images_from_videos_dir)
 
@@ -95,8 +101,11 @@ def create_images_from_videos(videos_dir, images_from_videos_dir):
             images_dir = pj(images_from_videos_dir, os.path.splitext(video_base_name)[0])
             os.mkdir(images_dir)
 
-            switch_frame = video_name_to_switch_frame[video_base_name]
-            extract_images_from_video(video_path, images_dir, switch_frame)
+            if video_name_to_switch_frame is not None:
+                switch_frame = video_name_to_switch_frame[video_base_name]
+                extract_images_from_video(video_path, images_dir, switch_frame)
+            else:
+                extract_images_from_video(video_path, images_dir)
     else:
         print('Directory {} already exists!'.format(images_from_videos_dir))
 
@@ -106,7 +115,7 @@ def multiple_copy(srcs, dst):
         os.makedirs(dst)
 
     for src in srcs:
-        shutil.copytree(src, dst)
+        shutil.copytree(src, pj(dst, os.path.basename(src)))
 
 
 # Arguments
@@ -121,13 +130,13 @@ parser.add_argument('--val-ratio', default=0.2, type=float,
 
 args = parser.parse_args()
 
-if __name__ == '__name__':
+if __name__ == '__main__':
     video_name_to_switch_frame = load_switch_frames(pj(args.videos_dir, 'ideal.txt'))
 
     images_from_videos_dir = pj(args.prepared_data_dir, 'images_from_videos')
 
     print('Creating images from videos...')
-    create_images_from_videos(args.videos_dir, images_from_videos_dir)
+    create_images_from_videos(args.videos_dir, images_from_videos_dir, video_name_to_switch_frame)
 
     if args.val_ratio != 0:
         train_images_dirs, val_images_dirs = train_test_split(
