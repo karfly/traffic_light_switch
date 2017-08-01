@@ -44,6 +44,7 @@ def extract_images_from_video(video_path, images_dir, switch_frame):
         success, image = video_capture.read()
         count += 1
 
+
 def parse_image_name(image_name):
     image_name = os.path.splitext(image_name)[0]  # delete file's extension
     image_name_splitted = image_name.split('_')
@@ -116,7 +117,7 @@ parser.add_argument('--videos-dir', type=str,
 parser.add_argument('--prepared-data-dir', type=str,
                     help='path to dir where prepared data will be stored')
 parser.add_argument('--val-ratio', default=0.2, type=float,
-                    help='ratio of validation dataset')
+                    help='ratio of validation dataset. 0 if not splitting is not needed')
 
 args = parser.parse_args()
 
