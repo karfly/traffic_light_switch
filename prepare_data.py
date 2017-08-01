@@ -96,7 +96,7 @@ def create_images_from_videos(videos_dir, images_from_videos_dir, video_name_to_
         os.mkdir(images_from_videos_dir)
 
         video_paths = list(filter(lambda x: x.endswith('.avi'), list_dir_with_full_paths(videos_dir)))
-        for video_path in tqdm(video_paths[1:]):
+        for video_path in tqdm(video_paths):
             video_base_name = os.path.basename(video_path)
             images_dir = pj(images_from_videos_dir, os.path.splitext(video_base_name)[0])
             os.mkdir(images_dir)
