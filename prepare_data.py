@@ -151,6 +151,6 @@ if __name__ == '__main__':
         create_classification_dir_from_images_dirs(train_images_dirs,
                                                    pj(args.prepared_data_dir, 'train_images_by_class'))
 
-        print('Creating train classification dir...')
+        print('Creating val classification dir...')
         create_classification_dir_from_images_dirs(val_images_dirs,
                                                    pj(args.prepared_data_dir, 'val_images_by_class'))
