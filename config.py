@@ -1,3 +1,6 @@
+from os.path import join as pj
+from glob import glob
+
 config = dict()
 
 # Model
@@ -17,18 +20,22 @@ config['N_CLASSES'] = 2
 # Train parameters
 config['BATCH_SIZE'] = 32
 config['EPOCHS'] = 100000
-config['STEPS_PER_EPOCH'] = 100
-config['VALIDATION_STEPS'] = 10
+
+n_train_images = len(glob(pj(config['TRAIN_DATA_DIR'],'*/*.jpg')))
+config['STEPS_PER_EPOCH'] = n_train_images // config['BATCH_SIZE'] // 3
+
+n_val_images = len(glob(pj(config['VAL_DATA_DIR'],'*/*.jpg')))
+config['VALIDATION_STEPS'] = n_val_images // config['BATCH_SIZE']
 
 config['LEARNING_RATE'] = 0.001
 
-config['CHECKPOINTS_PERIOD'] = 20
+config['CHECKPOINTS_PERIOD'] = 3
 
 # GPU
 config['CUDA_VISIBLE_DEVICES'] = '0'
 
 # ReduceLROnPlateau
 config['LR_FACTOR'] = 0.5
-config['LR_PATIENCE'] = 10
-config['MIN_LR'] = 0.000001
-config['COOLDOWN'] = 10
+config['LR_PATIENCE'] = 5
+config['MIN_LR'] = 0.0000001
+config['COOLDOWN'] = 5

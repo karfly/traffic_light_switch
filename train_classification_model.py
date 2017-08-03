@@ -43,11 +43,14 @@ if __name__ == '__main__':
     # Load model
     model_name = config['MODEL_NAME']
     print('Loading model {}...'.format(model_name))
-    if model_name == 'green_light_net_v1':
-        model = models.green_light_net_v1(
-            config['IMAGE_HEIGHT'], config['IMAGE_WIDTH'],
-            config['N_CHANNELS'], config['N_CLASSES'],
-            lr=config['LEARNING_RATE'])
+
+    if model_name in models.name_to_model:
+        model_build_function = models.name_to_model[model_name]
+        model = model_build_function(
+                config['IMAGE_HEIGHT'], config['IMAGE_WIDTH'],
+                config['N_CHANNELS'], config['N_CLASSES'],
+                lr=config['LEARNING_RATE']
+        )
     else:
         raise Exception('Unknown model name: {}'.format(model_name))
 
