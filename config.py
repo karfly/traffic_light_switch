@@ -27,7 +27,7 @@ config['STEPS_PER_EPOCH'] = n_train_images // config['BATCH_SIZE'] // 3
 n_val_images = len(glob(pj(config['VAL_DATA_DIR'],'*/*.jpg')))
 config['VALIDATION_STEPS'] = n_val_images // config['BATCH_SIZE']
 
-config['LEARNING_RATE'] = 0.001
+config['LEARNING_RATE'] = 1.0
 
 config['CHECKPOINTS_PERIOD'] = 3
 
