@@ -29,6 +29,6 @@ def green_light_net_v1(image_height, image_width, n_channels, n_classes, lr=0.00
 
     model.compile(loss='categorical_crossentropy',
                   optimizer=optimizers.Adadelta(lr=lr),
-                  metrics=['accuracy', 'precision'])
+                  metrics=['accuracy'])
 
     return model
