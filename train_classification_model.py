@@ -84,7 +84,8 @@ if __name__ == '__main__':
         config['VAL_DATA_DIR'],
         target_size=(config['IMAGE_HEIGHT'], config['IMAGE_WIDTH']),
         batch_size=config['BATCH_SIZE'],
-        class_mode='categorical'
+        class_mode='categorical',
+        shuffle=False
     )
 
 
